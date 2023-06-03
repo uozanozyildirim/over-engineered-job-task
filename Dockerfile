@@ -1,87 +1,29 @@
-version: "3.8"
-services:
+FROM php:8.1 as php
 
-    # PHP Service
-    php:
-        build:
-            context: .
-            target: php
-            args:
-                - APP_ENV=${APP_ENV}
-        environment:
-            - APP_ENV=${APP_ENV}
-            - CONTAINER_ROLE=app
-        working_dir: /var/www
-        volumes:
-            - ./:/var/www
-        ports:
-            - 8000:8000
-        depends_on:
-            - database
-            - redis
+RUN apt-get update -y
+RUN apt-get install -y unzip libpq-dev libcurl4-gnutls-dev
+RUN docker-php-ext-install pdo pdo_mysql bcmath
 
-#    # PHP Service
-#    websocket:
-#        build:
-#            context: .
-#            target: php
-#            args:
-#                - APP_ENV=${APP_ENV}
-#        environment:
-#            - APP_ENV=${APP_ENV}
-#            - CONTAINER_ROLE=websocket
-#        working_dir: /var/www
-#        volumes:
-#            - ./:/var/www
-#        ports:
-#            - 6001:6001
-#        depends_on:
-#            - database
-#            - redis
+RUN pecl install -o -f redis \
+    && rm -rf /tmp/pear \
+    && docker-php-ext-enable redis
 
-    # Database Server
-    database:
-        image: mysql:8.0
-        ports:
-            -   3306:3306
-        environment:
-            - MYSQL_DATABASE=${DB_DATABASE}
-            - MYSQL_USER=${DB_USERNAME}
-            - MYSQL_PASSWORD=${DB_PASSWORD}
-            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-        volumes:
-            - db-data:/var/lib/mysql
+WORKDIR /var/www
+COPY . .
 
-    # Redis Server
-    redis:
-        image: redis:alpine
-        command: redis-server --appendonly yes --requirepass  "${REDIS_PASSWORD}"
-        ports:
-            - 6379:6379
+COPY --from=composer:2.3.5 /usr/bin/composer /usr/bin/composer
 
-#    # Queue Server
-#    queue:
-#        build:
-#            context: .
-#            target: php
-#            args:
-#                - APP_ENV=${APP_ENV}
-#        environment:
-#            - APP_ENV=${APP_ENV}
-#            - CONTAINER_ROLE=queue
-#        working_dir: /var/www
-#        volumes:
-#            - ./:/var/www
+ENV PORT=8000
+ENTRYPOINT [ "docker/entrypoint.sh" ]
 
-    # Node Server
-    node:
-        build:
-            context: .
-            target: node
-        volumes:
-            - .:/usr/src
-            - ./node_modules:/usr/src/node_modules
-        tty: true
+# ==============================================================================
+#  node
+FROM node:14-alpine as node
 
-volumes:
-    db-data: ~
+WORKDIR /var/www
+COPY . .
+
+RUN npm install --global cross-env
+RUN npm install
+
+VOLUME /var/www/node_modules
