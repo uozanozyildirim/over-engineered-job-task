@@ -14,11 +14,8 @@ class TaskController extends BaseController
 
     public function index()
     {
-
-        $sampleData =  DB::table('users')->get();
-        return view('homepage', ['sampleData' => $sampleData]);
+        return view('homepage');
     }
-
 
 
 }
