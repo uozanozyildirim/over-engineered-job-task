@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Developer extends Model
+class TaskManager extends Model
 {
     use HasFactory;
-    protected  $table = 'developers';
+    protected $table = 'task_managers';
 }

@@ -15,7 +15,7 @@ class TaskProviderTwoTest extends TestCase
 
     public function test_get_data_from_task_api(): void
     {
-        $mockData = file_get_contents( 'public/mock/task.json');
+        $mockData = file_get_contents( 'public/mock/task1.json');
 
         $mockModel = $this->createMock(Task::class);
 
