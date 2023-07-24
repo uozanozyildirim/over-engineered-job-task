@@ -19,7 +19,7 @@ if [ "$role" = "app" ]; then
     php artisan cache:clear
     php artisan config:clear
     php artisan route:clear
-    php artisan serve --port=8080 --host=127.0.0.1 --env=.env
+    php artisan serve --port=$PORT --host=0.0.0.0 --env=.env
     exec docker-php-entrypoint "$@"
 elif [ "$role" = "queue" ]; then
     echo "Running the queue ... "
